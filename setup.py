@@ -19,7 +19,7 @@ _install_requires = [
 
 _extras_require = {
     'aws': [
-        'boto3==1.24.7',
+        'boto3==1.24.13',
     ],
     'vault': [
         'hvac==0.11.2',
