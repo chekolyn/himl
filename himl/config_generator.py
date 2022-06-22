@@ -15,6 +15,7 @@ import logging
 
 import pathlib2
 import yaml
+import jinjyaml
 from deepmerge import Merger
 
 from .interpolation import InterpolationResolver, EscapingResolver, InterpolationValidator, SecretResolver, \
@@ -89,6 +90,7 @@ class ConfigProcessor(object):
 
         generator.clean_escape_characters()
 
+        data = jinjyaml.extract(data, context=data)
         if print_data or output_file:
             formatted_data = generator.output_data(data, output_format)
 
@@ -171,8 +173,11 @@ class ConfigGenerator(object):
 
     @staticmethod
     def yaml_get_content(yaml_file):
+        loader = yaml.SafeLoader
+        j2Constructor = jinjyaml.Constructor()
+        loader.add_constructor("!j2", j2Constructor)
         with open(yaml_file, 'r') as f:
-            content = yaml.load(f, Loader=yaml.SafeLoader)
+            content = yaml.load(f, Loader=loader)
         return content if content else {}
 
     @staticmethod
@@ -240,7 +245,10 @@ class ConfigGenerator(object):
         return yaml.dump(data, Dumper=ConfigGenerator.yaml_dumper(), default_flow_style=False, width=200)
 
     def yaml_to_json(self, yaml_data):
-        return json.dumps(yaml.load(yaml_data, Loader=yaml.SafeLoader), indent=4)
+        loader = yaml.SafeLoader
+        j2Constructor = jinjyaml.Constructor()
+        loader.add_constructor("!j2", j2Constructor)
+        return json.dumps(yaml.load(yaml_data, Loader==loader), indent=4)
 
     def output_data(self, data, output_format):
         yaml_data = self.output_yaml_data(data)
